@@ -53,7 +53,6 @@ Six real bugs from Click's issue tracker, each pinned to the commit before the u
 | `parameter-source` | [#3458](https://github.com/pallets/click/issues/3458) | [#3484](https://github.com/pallets/click/pull/3484) | larger | `ctx.get_parameter_source()` must be available during parameter processing |
 | `resource-exception` | [#2447](https://github.com/pallets/click/issues/2447) | [#3058](https://github.com/pallets/click/pull/3058) | larger | `Context.with_resource` must forward exception info to the resource's `__exit__` |
 
-A seventh `smoke` task (add a helper function and attempt one outbound request) is used only to verify that the sandbox and provider wiring work; it is excluded from scored runs.
 
 ## Results: GLM-5.3 Flash
 
@@ -85,7 +84,7 @@ Agent activity across the 18 attempts: 488 shell commands executed through Codex
 
 **Failures.** Both misses (`usage-no-args` rep 2, `enum-choice-completion` rep 3) produced patches that applied cleanly and passed the original test suite but failed the withheld regression tests, i.e. incomplete fixes rather than crashes or regressions. Together they consumed about 1.14M tokens over 224 s.
 
-Per-attempt grades are in [results/glm-cloud/results.jsonl](results/glm-cloud/results.jsonl), the model patches in `results/glm-cloud/attempts/*/patch.diff`, and the generated summary in [results/glm-cloud/report.md](results/glm-cloud/report.md). Full agent transcripts are not committed; rerunning produces them locally.
+Per-attempt grades are in [results/glm-cloud/results.jsonl](results/glm-cloud/results.jsonl), the model patches in `results/glm-cloud/<task>/<attempt>/patch.diff`, and the generated summary in [results/glm-cloud/report.md](results/glm-cloud/report.md). Full agent transcripts are not committed; rerunning produces them locally.
 
 ### Caveats
 
@@ -120,7 +119,7 @@ python eval.py report glm-cloud
 python ttft.py --model glm-5.3-flash:cloud --reps 2 --max-tokens 1024
 ```
 
-Useful flags for `eval.py run`: `--models luna,glm`, `--tasks echo-empty-bytes,usage-no-args`, `--reps N`, `--timeout SECONDS`, and `--smoke` for the sandbox check. Running with `--models luna,glm` alternates which model goes first on each task to reduce ordering effects; the `luna` runs require Codex to be logged in to OpenAI.
+Useful flags for `eval.py run`: `--models luna,glm`, `--tasks echo-empty-bytes,usage-no-args`, `--reps N`, `--timeout SECONDS`. Running with `--models luna,glm` alternates which model goes first on each task to reduce ordering effects; the `luna` runs require Codex to be logged in to OpenAI.
 
 To use the same model interactively with Codex outside the harness: `ollama launch codex --model glm-5.3-flash:cloud`.
 
@@ -131,8 +130,7 @@ eval.py              runner: validate / run / report
 ttft.py              time-to-first-token and token counts via streaming API
 tasks.json           task metadata (issue, PR, base/fixed commits, difficulty)
 tasks/<id>/          prompt.md, reference.patch, test_regression.py (withheld from the agent)
-smoke/               sandbox and provider wiring check
 config.toml          Codex configuration used inside the container
 Dockerfile           pinned agent/grading image
-results/<run>/       results.jsonl, report.md, attempts/*/patch.diff (transcripts stay local)
+results/<run>/       results.jsonl, report.md, <task>/<attempt>/patch.diff (transcripts stay local)
 ```

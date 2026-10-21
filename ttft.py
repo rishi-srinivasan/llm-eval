@@ -33,7 +33,7 @@ if __name__ == "__main__":
     a = p.parse_args()
     one(a.host, a.model, "hi", 8)  # warm-up: connection/model load excluded
     print("task      ttft_s  ttft_content_s  prompt_tok  completion_tok  total_s")
-    for f in sorted(glob.glob("tasks/*/prompt.md") + glob.glob("smoke/prompt.md")):
+    for f in sorted(glob.glob("tasks/*/prompt.md")):
         rs = [one(a.host, a.model, open(f).read(), a.max_tokens) for _ in range(a.reps)]
         m = lambda k: st.median([r[k] for r in rs if r[k] is not None] or [float("nan")])
         print(f"{f.split('/')[-2]:8}  {m('ttft'):6.2f}  {m('ttft_content'):14.2f}  {m('prompt_tokens'):10.0f}  {m('completion_tokens'):14.0f}  {m('total'):7.2f}")
