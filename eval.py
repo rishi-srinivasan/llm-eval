@@ -2,7 +2,7 @@
 """Minimal Luna-vs-GLM Click bug-fix runner.
 
   eval.py validate                      # base fails / reference passes, per task
-  eval.py run RUN [--smoke] [--models luna,glm] [--tasks echo-empty-bytes,..] [--reps 3] [--timeout 900]
+  eval.py run RUN [--models luna,glm] [--tasks echo-empty-bytes,..] [--reps 3] [--timeout 900]
   eval.py report RUN                    # results/RUN/results.jsonl -> report.md
 Attempts already present on disk are skipped (no silent retries; delete to redo).
 """
@@ -13,11 +13,10 @@ ROOT = Path(__file__).parent.resolve()
 REPO = ROOT / ".cache/click.git"
 IMAGE = "click-eval"
 CODEX_HOME = Path.home() / ".codex"
-SMOKE = {"id": "smoke", "base": "a5f5aa6d4012d256ccca24638f2642fc371e9f77", "dir": "smoke"}
 HOST = "http://host.docker.internal:11434/v1"
 MODELS = {  # codex `-c` overrides; Luna low reasoning, GLM provider-default reasoning (max)
     "luna": ["-m", "gpt-5.6-luna", "-c", 'model_reasoning_effort="low"'],
-    "glm": ["-m", os.environ.get("GLM_MODEL", "glm-5.3-flash:cloud"),  # GLM_MODEL only for unscored smoke
+    "glm": ["-m", os.environ.get("GLM_MODEL", "glm-5.3-flash:cloud"),
              "-c", 'model_provider="ollama_host"',
             "-c", f'model_providers.ollama_host={{name="Ollama Cloud via host",base_url="{HOST}",wire_api="responses"}}',
             "-c", 'model_catalog_json="/home/eval/.codex/models.json"'],
@@ -37,6 +36,8 @@ def task_dir(t):
 
 
 def snapshot(base, dest):
+    if not REPO.exists():  # bare clone: cheap `git archive` of pinned commits, no checkout
+        sp.run(["git", "clone", "--bare", "https://github.com/pallets/click", str(REPO)], check=True)
     dest.mkdir(parents=True)
     arch = sp.run(["git", "--git-dir", str(REPO), "archive", base], capture_output=True, check=True).stdout
     sp.run(["tar", "-x", "-C", str(dest)], input=arch, check=True)
@@ -81,12 +82,12 @@ def validate():
 
 
 def attempt(run, t, model, rep, timeout):
-    aid = f"{t['id']}-{model}-r{rep}"
-    out = run / "attempts" / aid
+    aid = f"{model}-attempt-{rep}"
+    out = run / t["id"] / aid
     if out.exists():
         return None
     out.mkdir(parents=True)
-    ws, home = run / "workspaces" / aid, run / "auth" / aid
+    ws, home = out / "workspace", out / "auth"
     snapshot(t["base"], ws)
     for c in (["init", "-q"], ["add", "-A"], ["-c", "user.name=e", "-c", "user.email=e@e", "commit", "-qm", "base"]):
         sh(["git", *c], cwd=ws)
@@ -97,7 +98,7 @@ def attempt(run, t, model, rep, timeout):
     else:
         shutil.copy(CODEX_HOME / "ollama-launch-models.json", home / "models.json")
     prompt = (task_dir(t) / "prompt.md").read_text()
-    cname = f"eval-{aid}"
+    cname = f"eval-{t['id']}-{aid}"
     sh(["docker", "rm", "-f", cname])
     sp.run(["docker", "run", "-d", "--name", cname, "--add-host", "host.docker.internal:host-gateway", "--security-opt", "seccomp=unconfined",  # lets codex's bwrap sandbox run
             
@@ -131,7 +132,7 @@ def attempt(run, t, model, rep, timeout):
     errors = [e for e in events if e.get("type") in ("error", "turn.failed")]
     if status == "ok" and (rc != 0 or not turns):
         status = "infra_or_model_error"  # inspect events.jsonl/stderr.txt; not retried
-    res = dict(id=aid, task=t["id"], model=model, rep=rep, status=status, exit_code=rc, wall_time=wall,
+    res = dict(id=f"{t['id']}/{aid}", task=t["id"], model=model, rep=rep, status=status, exit_code=rc, wall_time=wall,
                usage=usage if turns else None, error_events=len(errors), patch_bytes=len(patch),
                codex_args=MODELS[model])
     res.update(grade(t, patch, timeout))
@@ -139,16 +140,16 @@ def attempt(run, t, model, rep, timeout):
     (out / "meta.json").write_text(json.dumps(res, indent=1))
     with open(run / "results.jsonl", "a") as f:
         f.write(json.dumps(res) + "\n")
-    print(aid, status, "PASS" if res["pass"] else "fail", f"{wall:.0f}s", flush=True)
+    print(res["id"], status, "PASS" if res["pass"] else "fail", f"{wall:.0f}s", flush=True)
     return res
 
 
 def run(a):
     root = ROOT / "results" / a.run
-    ts = [SMOKE] if a.smoke else [t for t in tasks() if not a.tasks or t["id"] in a.tasks.split(",")]
+    ts = [t for t in tasks() if not a.tasks or t["id"] in a.tasks.split(",")]
     models = a.models.split(",")
     pair = 0
-    for rep in range(1, (1 if a.smoke else a.reps) + 1):
+    for rep in range(1, a.reps + 1):
         for t in ts:
             order = ["luna", "glm"] if pair % 2 == 0 else ["glm", "luna"]  # alternate first model
             pair += 1
@@ -202,7 +203,7 @@ if __name__ == "__main__":
     s = p.add_subparsers(dest="cmd", required=True)
     s.add_parser("validate")
     r = s.add_parser("run")
-    r.add_argument("run"); r.add_argument("--smoke", action="store_true")
+    r.add_argument("run")
     r.add_argument("--models", default="luna,glm"); r.add_argument("--tasks")
     r.add_argument("--reps", type=int, default=3); r.add_argument("--timeout", type=int, default=900)
     s.add_parser("report").add_argument("run")

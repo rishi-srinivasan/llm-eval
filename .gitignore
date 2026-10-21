@@ -2,5 +2,9 @@
 .cache/
 __pycache__/
 .pytest_cache/
-results/*/workspaces/
-results/*/auth/
+results/*/*/*/workspace/
+results/*/*/*/auth/
+results/*/*/*/events.jsonl
+results/*/*/*/stderr.txt
+results/*/*/*/meta.json
+*.log
