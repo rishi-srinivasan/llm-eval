@@ -4,3 +4,8 @@ __pycache__/
 .pytest_cache/
 results/*/workspaces/
 results/*/auth/
+results/*/attempts/*/events.jsonl
+results/*/attempts/*/stderr.txt
+results/*/attempts/*/meta.json
+results/smoke/
+*.log

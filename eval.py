@@ -37,6 +37,8 @@ def task_dir(t):
 
 
 def snapshot(base, dest):
+    if not REPO.exists():  # bare clone: cheap `git archive` of pinned commits, no checkout
+        sp.run(["git", "clone", "--bare", "https://github.com/pallets/click", str(REPO)], check=True)
     dest.mkdir(parents=True)
     arch = sp.run(["git", "--git-dir", str(REPO), "archive", base], capture_output=True, check=True).stdout
     sp.run(["tar", "-x", "-C", str(dest)], input=arch, check=True)
