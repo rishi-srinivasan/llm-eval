@@ -1,0 +1,14 @@
+diff --git a/src/click/types.py b/src/click/types.py
+index 556f20f..1ca3e9b 100644
+--- a/src/click/types.py
++++ b/src/click/types.py
+@@ -408,8 +408,7 @@ class Choice(ParamType[ParamTypeValue], t.Generic[ParamTypeValue]):
+         """
+         from click.shell_completion import CompletionItem
+ 
+-        str_choices = map(str, self.choices)
+-
++        str_choices = [self.normalize_choice(choice, ctx) for choice in self.choices]
+         if self.case_sensitive:
+             matched = (c for c in str_choices if c.startswith(incomplete))
+         else:

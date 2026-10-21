@@ -1,0 +1,32 @@
+{
+ "id": "resource-exception-glm-r2",
+ "task": "resource-exception",
+ "model": "glm",
+ "rep": 2,
+ "status": "ok",
+ "exit_code": 0,
+ "wall_time": 147.26073503494263,
+ "usage": {
+  "input": 939163,
+  "cached_input": 895424,
+  "output": 14613,
+  "reasoning": 0
+ },
+ "error_events": 0,
+ "patch_bytes": 1899,
+ "codex_args": [
+  "-m",
+  "glm-5.3-flash:cloud",
+  "-c",
+  "model_provider=\"ollama_host\"",
+  "-c",
+  "model_providers.ollama_host={name=\"Ollama Cloud via host\",base_url=\"http://host.docker.internal:11434/v1\",wire_api=\"responses\"}",
+  "-c",
+  "model_catalog_json=\"/home/eval/.codex/models.json\""
+ ],
+ "original": true,
+ "regression": true,
+ "grade_time": 2.03696870803833,
+ "grade_log": ".................................................................... [ 71%]\n....................................sssssssssssssssssssss............... [ 77%]\n........................................................................ [ 82%]\n........................................................................ [ 88%]\n........................................................................ [ 93%]\n........................................................................ [ 99%]\n.........                                                                [100%]\n1283 passed, 21 skipped, 1 xfailed in 1.29s\n\n...                                                                      [100%]\n3 passed in 0.01s\n",
+ "pass": true
+}

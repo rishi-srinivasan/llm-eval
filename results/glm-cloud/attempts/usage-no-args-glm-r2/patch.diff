@@ -1,0 +1,19 @@
+diff --git a/src/click/formatting.py b/src/click/formatting.py
+index d9075ca..7756e01 100644
+--- a/src/click/formatting.py
++++ b/src/click/formatting.py
+@@ -161,6 +161,14 @@ class HelpFormatter:
+         if prefix is None:
+             prefix = "{usage} ".format(usage=_("Usage:"))
+ 
++        # TextWrapper discards its prefix when given an empty string, so
++        # write an argument-less usage directly.
++        if not args:
++            self.write(" " * self.current_indent)
++            self.write(prefix)
++            self.write(f"{prog}\n")
++            return
++
+         usage_prefix = f"{prefix:>{self.current_indent}}{prog} "
+         text_width = self.width - self.current_indent
+ 

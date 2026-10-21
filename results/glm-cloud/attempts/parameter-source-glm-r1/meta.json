@@ -1,0 +1,32 @@
+{
+ "id": "parameter-source-glm-r1",
+ "task": "parameter-source",
+ "model": "glm",
+ "rep": 1,
+ "status": "ok",
+ "exit_code": 0,
+ "wall_time": 227.68419098854065,
+ "usage": {
+  "input": 1526748,
+  "cached_input": 1471424,
+  "output": 18713,
+  "reasoning": 0
+ },
+ "error_events": 0,
+ "patch_bytes": 5334,
+ "codex_args": [
+  "-m",
+  "glm-5.3-flash:cloud",
+  "-c",
+  "model_provider=\"ollama_host\"",
+  "-c",
+  "model_providers.ollama_host={name=\"Ollama Cloud via host\",base_url=\"http://host.docker.internal:11434/v1\",wire_api=\"responses\"}",
+  "-c",
+  "model_catalog_json=\"/home/eval/.codex/models.json\""
+ ],
+ "original": true,
+ "regression": true,
+ "grade_time": 3.6869029998779297,
+ "grade_log": ".................................................. [ 74%]\n.sssssssssssssssssssss................ss................................ [ 78%]\n........................................................................ [ 82%]\n........................................................................ [ 87%]\n........s............................................................... [ 91%]\n........................................................................ [ 96%]\n.................................................................        [100%]\n1624 passed, 24 skipped, 30000 deselected, 1 xfailed in 2.61s\n\n..........                                                               [100%]\n10 passed in 0.01s\n",
+ "pass": true
+}

@@ -1,0 +1,29 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 3544c03..ab143ae 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2609,6 +2609,11 @@ class Parameter(ABC):
+         with augment_usage_errors(ctx, param=self):
+             value, source = self.consume_value(ctx, opts)
+ 
++            # Make the incoming source visible to type conversion and callbacks.
++            # For competing options sharing a name, the previous source is saved so
++            # that a losing option cannot replace it after this temporary install.
++            ctx.set_parameter_source(self.name, source)
++
+             # Display a deprecation warning if necessary.
+             if (
+                 self.deprecated
+@@ -2658,7 +2663,11 @@ class Parameter(ABC):
+             if self.expose_value:
+                 ctx.params[self.name] = value
+                 ctx._param_default_explicit[self.name] = self._default_explicit
+-        elif existing_source is None:
++        elif existing_source is not None:
++            # Restore the source belonging to the winning option. The temporary
++            # install above was only for this option's type and callback processing.
++            ctx.set_parameter_source(self.name, existing_source)
++        else:
+             # Nothing has claimed the slot yet. Record at least our source so downstream
+             # lookups don't return ``None``.
+             ctx.set_parameter_source(self.name, source)

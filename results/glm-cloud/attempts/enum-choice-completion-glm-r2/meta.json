@@ -1,0 +1,32 @@
+{
+ "id": "enum-choice-completion-glm-r2",
+ "task": "enum-choice-completion",
+ "model": "glm",
+ "rep": 2,
+ "status": "ok",
+ "exit_code": 0,
+ "wall_time": 118.06517505645752,
+ "usage": {
+  "input": 426424,
+  "cached_input": 392512,
+  "output": 9062,
+  "reasoning": 0
+ },
+ "error_events": 0,
+ "patch_bytes": 1730,
+ "codex_args": [
+  "-m",
+  "glm-5.3-flash:cloud",
+  "-c",
+  "model_provider=\"ollama_host\"",
+  "-c",
+  "model_providers.ollama_host={name=\"Ollama Cloud via host\",base_url=\"http://host.docker.internal:11434/v1\",wire_api=\"responses\"}",
+  "-c",
+  "model_catalog_json=\"/home/eval/.codex/models.json\""
+ ],
+ "original": true,
+ "regression": true,
+ "grade_time": 3.8387138843536377,
+ "grade_log": ".................................................. [ 74%]\nsssssssssssssssssssss................ss................................. [ 78%]\n........................................................................ [ 83%]\n........................................................................ [ 87%]\n.......s................................................................ [ 91%]\n........................................................................ [ 96%]\n................................................................         [100%]\n1623 passed, 24 skipped, 30001 deselected, 1 xfailed in 2.73s\n\n.....                                                                    [100%]\n5 passed in 0.01s\n",
+ "pass": true
+}

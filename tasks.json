@@ -1,0 +1,59 @@
+[
+  {
+    "id": "echo-empty-bytes",
+    "issue_number": 3487,
+    "issue": "https://github.com/pallets/click/issues/3487",
+    "reference_pr": 3493,
+    "base": "d42f15b71757de791a5781fb179fd972da9169f5",
+    "fixed": "a5f5aa6d4012d256ccca24638f2642fc371e9f77",
+    "difficulty": "small"
+  },
+  {
+    "id": "usage-no-args",
+    "issue_number": 3360,
+    "issue": "https://github.com/pallets/click/issues/3360",
+    "reference_pr": 3434,
+    "base": "63274a79d08fdc5c19220696144489f7144a8547",
+    "fixed": "3bb230dcd5d751f8605b46e9df5a541639d5fd4e",
+    "difficulty": "small"
+  },
+  {
+    "id": "enum-choice-completion",
+    "issue_number": 3015,
+    "issue": "https://github.com/pallets/click/issues/3015",
+    "reference_pr": 3471,
+    "base": "bee33141650ce7c91551f5fac9ebfb0c8fca473e",
+    "fixed": "3c12ce7050bf63c9fa522e5d7b95543037da0f63",
+    "difficulty": "medium",
+    "deselect": [
+      "tests/test_shell_completion.py::test_choice_case_sensitive[False-expect0]"
+    ]
+  },
+  {
+    "id": "optional-option-value",
+    "issue_number": 3084,
+    "issue": "https://github.com/pallets/click/issues/3084",
+    "reference_pr": 3152,
+    "base": "7f7bbe4569ea68e8dabee232eade069ef3310aea",
+    "fixed": "ebcd548d50662bc8fa4f8b9ec7fe13cb8310bfaa",
+    "difficulty": "medium"
+  },
+  {
+    "id": "parameter-source",
+    "issue_number": 3458,
+    "issue": "https://github.com/pallets/click/issues/3458",
+    "reference_pr": 3484,
+    "base": "4b24a6c8f6658ef89fd6db4dcaf8ee88eef75dfa",
+    "fixed": "d42f15b71757de791a5781fb179fd972da9169f5",
+    "difficulty": "larger"
+  },
+  {
+    "id": "resource-exception",
+    "issue_number": 2447,
+    "issue": "https://github.com/pallets/click/issues/2447",
+    "reference_pr": 3058,
+    "base": "16fe802a3f96c4c8fa3cd382f1a7577fda0c5321",
+    "fixed": "36deba8a95a2585de1a2aa4475b7f054f52830ac",
+    "difficulty": "larger"
+  }
+]

@@ -1,0 +1,20 @@
+diff --git a/src/click/formatting.py b/src/click/formatting.py
+index d9075ca..0ec1b01 100644
+--- a/src/click/formatting.py
++++ b/src/click/formatting.py
+@@ -161,7 +161,14 @@ class HelpFormatter:
+         if prefix is None:
+             prefix = "{usage} ".format(usage=_("Usage:"))
+ 
+-        usage_prefix = f"{prefix:>{self.current_indent}}{prog} "
++        separator = " " if args.strip() else ""
++        usage_prefix = f"{prefix:>{self.current_indent}}{prog}{separator}"
++
++        if not separator:
++            self.write(usage_prefix)
++            self.write("\n")
++            return
++
+         text_width = self.width - self.current_indent
+ 
+         if text_width >= (term_len(usage_prefix) + 20):

@@ -1,0 +1,46 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 3544c03..21ad9b0 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2609,6 +2609,11 @@ class Parameter(ABC):
+         with augment_usage_errors(ctx, param=self):
+             value, source = self.consume_value(ctx, opts)
+ 
++            # Make the source available to type conversion and eager callbacks while
++            # this parameter is processed. The final value below is still arbitrated
++            # against any option that previously claimed a shared parameter slot.
++            ctx.set_parameter_source(self.name, source)
++
+             # Display a deprecation warning if necessary.
+             if (
+                 self.deprecated
+@@ -2636,8 +2641,13 @@ class Parameter(ABC):
+                 # to UNSET, which will be interpreted as a missing value.
+                 value = UNSET
+ 
+-        # Arbitrate the slot when several parameters target the same variable
+-        # name (feature-switch groups). See: https://github.com/pallets/click/issues/3403
++        # Arbitrate the slot when several parameters target the same variable name
++        # (feature-switch groups). See: https://github.com/pallets/click/issues/3403
++        #
++        # During processing, each parameter saw its own source in the context. Now
++        # decide which parameter owns the final slot, and restore the winning source
++        # if the parameter currently being processed is only temporarily exposing
++        # its source.
+         slot_empty = existing_value is UNSET
+         more_explicit = existing_source is not None and source < existing_source
+         same_source = existing_source is not None and source == existing_source
+@@ -2659,9 +2669,11 @@ class Parameter(ABC):
+                 ctx.params[self.name] = value
+                 ctx._param_default_explicit[self.name] = self._default_explicit
+         elif existing_source is None:
+-            # Nothing has claimed the slot yet. Record at least our source so downstream
+-            # lookups don't return ``None``.
++            # Nothing recorded a source for the slot. Ensure one is recorded even if
++            # an untracked value was inserted into ``ctx.params`` before parsing.
+             ctx.set_parameter_source(self.name, source)
++        else:
++            ctx.set_parameter_source(self.name, existing_source)
+ 
+         return value, args
+ 

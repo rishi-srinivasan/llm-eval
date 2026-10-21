@@ -1,0 +1,117 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 3544c03..4deb2d0 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -2335,6 +2335,28 @@ class Parameter(ABC):
+     @abstractmethod
+     def add_to_parser(self, parser: _OptionParser, ctx: Context) -> None: ...
+ 
++    @contextmanager
++    def _with_parameter_source(
++        self, ctx: Context, source: ParameterSource
++    ) -> cabc.Iterator[None]:
++        """Expose ``source`` while processing a parameter.
++
++        The source is restored unless processing changed it explicitly. This
++        keeps sibling parameters from contaminating the final source recorded
++        for a parameter slot that they share.
++        """
++        previous_source = ctx._parameter_source.get(self.name)
++        ctx.set_parameter_source(self.name, source)
++
++        try:
++            yield
++        finally:
++            if ctx._parameter_source.get(self.name) is source:
++                if previous_source is None:
++                    del ctx._parameter_source[self.name]
++                else:
++                    ctx.set_parameter_source(self.name, previous_source)
++
+     def consume_value(
+         self, ctx: Context, opts: cabc.Mapping[str, t.Any]
+     ) -> tuple[t.Any, ParameterSource]:
+@@ -2609,32 +2631,34 @@ class Parameter(ABC):
+         with augment_usage_errors(ctx, param=self):
+             value, source = self.consume_value(ctx, opts)
+ 
+-            # Display a deprecation warning if necessary.
+-            if (
+-                self.deprecated
+-                and value is not UNSET
+-                and source < ParameterSource.DEFAULT_MAP
+-            ):
+-                message = _(
+-                    "DeprecationWarning: The {param_type} {name!r} is deprecated."
+-                    "{extra_message}"
+-                ).format(
+-                    param_type=self.param_type_name,
+-                    name=self.human_readable_name,
+-                    extra_message=_format_deprecated_suffix(self.deprecated),
+-                )
+-                echo(style(message, fg="red"), err=True)
+-
+-            # Process the value through the parameter's type.
+-            try:
+-                value = self.process_value(ctx, value)
+-            except Exception:
+-                if not ctx.resilient_parsing:
+-                    raise
+-                # In resilient parsing mode, we do not want to fail the command if the
+-                # value is incompatible with the parameter type, so we reset the value
+-                # to UNSET, which will be interpreted as a missing value.
+-                value = UNSET
++            # Processing may include type conversion and eager callbacks,
++            # which should be able to inspect the source of the value.
++            with self._with_parameter_source(ctx, source):
++                # Display a deprecation warning if necessary.
++                if (
++                    self.deprecated
++                    and value is not UNSET
++                    and source < ParameterSource.DEFAULT_MAP
++                ):
++                    message = _(
++                        "DeprecationWarning: The {param_type} {name!r} is deprecated."
++                        "{extra_message}"
++                    ).format(
++                        param_type=self.param_type_name,
++                        name=self.human_readable_name,
++                        extra_message=_format_deprecated_suffix(self.deprecated),
++                    )
++                    echo(style(message, fg="red"), err=True)
++
++                # Process the value through the parameter's type.
++                try:
++                    value = self.process_value(ctx, value)
++                except Exception:
++                    if not ctx.resilient_parsing:
++                        raise
++                    # In resilient parsing mode, incompatible types do not fail the
++                    # command. Reset to UNSET, which is treated as missing.
++                    value = UNSET
+ 
+         # Arbitrate the slot when several parameters target the same variable
+         # name (feature-switch groups). See: https://github.com/pallets/click/issues/3403
+@@ -3368,7 +3392,11 @@ class Option(Parameter):
+         if value is FLAG_NEEDS_VALUE:
+             # If the option allows for a prompt, we start an interaction with the user.
+             if self.prompt is not None and not ctx.resilient_parsing:
+-                value = self.prompt_for_value(ctx)
++                # Prompt conversion happens before this method has decided
++                # that the source is PROMPT, so expose it around the
++                # interactive call.
++                with self._with_parameter_source(ctx, ParameterSource.PROMPT):
++                    value = self.prompt_for_value(ctx)
+                 source = ParameterSource.PROMPT
+             # Else the flag takes its flag_value as value.
+             else:
+@@ -3406,7 +3434,8 @@ class Option(Parameter):
+             and (self.required or self.prompt_required)
+             and not ctx.resilient_parsing
+         ):
+-            value = self.prompt_for_value(ctx)
++            with self._with_parameter_source(ctx, ParameterSource.PROMPT):
++                value = self.prompt_for_value(ctx)
+             source = ParameterSource.PROMPT
+ 
+         return value, source

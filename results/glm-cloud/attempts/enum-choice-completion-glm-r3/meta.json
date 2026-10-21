@@ -1,0 +1,32 @@
+{
+ "id": "enum-choice-completion-glm-r3",
+ "task": "enum-choice-completion",
+ "model": "glm",
+ "rep": 3,
+ "status": "ok",
+ "exit_code": 0,
+ "wall_time": 141.61506986618042,
+ "usage": {
+  "input": 747198,
+  "cached_input": 703488,
+  "output": 9114,
+  "reasoning": 0
+ },
+ "error_events": 0,
+ "patch_bytes": 1233,
+ "codex_args": [
+  "-m",
+  "glm-5.3-flash:cloud",
+  "-c",
+  "model_provider=\"ollama_host\"",
+  "-c",
+  "model_providers.ollama_host={name=\"Ollama Cloud via host\",base_url=\"http://host.docker.internal:11434/v1\",wire_api=\"responses\"}",
+  "-c",
+  "model_catalog_json=\"/home/eval/.codex/models.json\""
+ ],
+ "original": true,
+ "regression": false,
+ "grade_time": 3.5802791118621826,
+ "grade_log": ".................................................. [ 74%]\nsssssssssssssssssssss................ss................................. [ 78%]\n........................................................................ [ 83%]\n........................................................................ [ 87%]\n.......s................................................................ [ 91%]\n........................................................................ [ 96%]\n................................................................         [100%]\n1623 passed, 24 skipped, 30001 deselected, 1 xfailed in 2.54s\n\n....F                                                                    [100%]\n=================================== FAILURES ===================================\n__________________________ test_custom_normalization ___________________________\n\n    def test_custom_normalization():\n        class DashedChoice(click.Choice):\n            def normalize_choice(self, choice, ctx):\n                return super().normalize_choice(choice, ctx).replace(\"_\", \"-\")\n    \n        choice = DashedChoice([\"fast_mode\", \"safe_mode\"])\n        ctx = click.Context(click.Command(\"demo\"))\n        items = choice.shell_complete(ctx, None, \"fast-\")\n>       assert [item.value for item in items] == [\"fast-mode\"]\nE       AssertionError: assert [] == ['fast-mode']\nE         \nE         Right contains one more item: 'fast-mode'\nE         Use -v to get more diff\n\ntests/test_regression.py:37: AssertionError\n=========================== short test summary info ============================\nFAILED tests/test_regression.py::test_custom_normalization - AssertionError: ...\n1 failed, 4 passed in 0.02s\n",
+ "pass": false
+}

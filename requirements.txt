@@ -1,0 +1,5 @@
+pytest==8.3.5
+iniconfig==2.1.0
+packaging==25.0
+pluggy==1.5.0
+flit_core==3.12.0

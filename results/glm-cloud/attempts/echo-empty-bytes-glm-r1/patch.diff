@@ -1,0 +1,41 @@
+diff --git a/src/click/utils.py b/src/click/utils.py
+index 223d6b8..b669122 100644
+--- a/src/click/utils.py
++++ b/src/click/utils.py
+@@ -294,20 +294,19 @@ def echo(
+         out = message
+ 
+     if nl:
+-        out = out or ""
++        if out is None:
++            out = ""
+         if isinstance(out, str):
+             out += "\n"
+         else:
+             out += b"\n"
+ 
+-    if not out:
+-        file.flush()
+-        return
+-
+     # If there is a message and the value looks like bytes, we manually
+     # need to find the binary stream and write the message in there.
+     # This is done separately so that most stream types will work as you
+-    # would expect. Eg: you can write to StringIO for other cases.
++    # would expect. Eg: you can write to StringIO for other cases. This
++    # happens before empty output is skipped so that empty binary output,
++    # such as an empty bytearray, is still handled as binary.
+     if isinstance(out, (bytes, bytearray)):
+         binary_file = _find_binary_writer(file)
+ 
+@@ -317,6 +316,10 @@ def echo(
+             binary_file.flush()
+             return
+ 
++    if not out:
++        file.flush()
++        return
++
+     # ANSI style code support. For no message or bytes, nothing happens.
+     # When outputting to a file instead of a terminal, strip codes.
+     else:

@@ -1,0 +1,24 @@
+diff --git a/src/click/core.py b/src/click/core.py
+index 679336a..a2d97dc 100644
+--- a/src/click/core.py
++++ b/src/click/core.py
+@@ -483,11 +483,17 @@ class Context:
+         exc_type: type[BaseException] | None,
+         exc_value: BaseException | None,
+         tb: TracebackType | None,
+-    ) -> None:
++    ) -> bool | None:
+         self._depth -= 1
++        suppressed: bool | None = None
++
+         if self._depth == 0:
+-            self.close()
++            suppressed = self._exit_stack.__exit__(exc_type, exc_value, tb)
++            # In case the context is reused, create a new exit stack.
++            self._exit_stack = ExitStack()
++
+         pop_context()
++        return suppressed is True
+ 
+     @contextmanager
+     def scope(self, cleanup: bool = True) -> cabc.Iterator[Context]:

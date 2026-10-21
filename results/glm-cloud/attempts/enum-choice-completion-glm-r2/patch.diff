@@ -1,0 +1,43 @@
+diff --git a/src/click/types.py b/src/click/types.py
+index 556f20f..53f88e3 100644
+--- a/src/click/types.py
++++ b/src/click/types.py
+@@ -408,15 +408,32 @@ class Choice(ParamType[ParamTypeValue], t.Generic[ParamTypeValue]):
+         """
+         from click.shell_completion import CompletionItem
+ 
+-        str_choices = map(str, self.choices)
++        normalized_choices = list(self._normalized_mapping(ctx=ctx).items())
+ 
+         if self.case_sensitive:
+-            matched = (c for c in str_choices if c.startswith(incomplete))
+-        else:
+-            incomplete = incomplete.lower()
+-            matched = (c for c in str_choices if c.lower().startswith(incomplete))
++            matched = [
++                (choice, normalized)
++                for choice, normalized in normalized_choices
++                if normalized.startswith(incomplete)
++            ]
++            return [CompletionItem(normalized) for choice, normalized in matched]
++
++        lower_incomplete = incomplete.lower()
++        matched = [
++            (choice, normalized)
++            for choice, normalized in normalized_choices
++            if normalized.lower().startswith(lower_incomplete)
++        ]
+ 
+-        return [CompletionItem(c) for c in matched]
++        # Case-insensitive completion has always preserved the spelling of
++        # ordinary string choices. Enum values and other custom normalizations
++        # still need their normalized spelling to be accepted by ``convert``.
++        return [
++            CompletionItem(
++                str(choice) if normalized == str(choice).lower() else normalized
++            )
++            for choice, normalized in matched
++        ]
+ 
+ 
+ class DateTimeInfoDict(ParamTypeInfoDict):

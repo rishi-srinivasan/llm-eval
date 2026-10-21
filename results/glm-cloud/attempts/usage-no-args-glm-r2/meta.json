@@ -1,0 +1,32 @@
+{
+ "id": "usage-no-args-glm-r2",
+ "task": "usage-no-args",
+ "model": "glm",
+ "rep": 2,
+ "status": "ok",
+ "exit_code": 0,
+ "wall_time": 81.96121311187744,
+ "usage": {
+  "input": 377219,
+  "cached_input": 267520,
+  "output": 7056,
+  "reasoning": 0
+ },
+ "error_events": 0,
+ "patch_bytes": 695,
+ "codex_args": [
+  "-m",
+  "glm-5.3-flash:cloud",
+  "-c",
+  "model_provider=\"ollama_host\"",
+  "-c",
+  "model_providers.ollama_host={name=\"Ollama Cloud via host\",base_url=\"http://host.docker.internal:11434/v1\",wire_api=\"responses\"}",
+  "-c",
+  "model_catalog_json=\"/home/eval/.codex/models.json\""
+ ],
+ "original": true,
+ "regression": false,
+ "grade_time": 3.614197015762329,
+ "grade_log": "..........................................ssssssss [ 74%]\nsssssssssssss................ss......................................... [ 79%]\n........................................................................ [ 83%]\n.......................................................................s [ 87%]\n........................................................................ [ 92%]\n........................................................................ [ 96%]\n........................................................                 [100%]\n1615 passed, 24 skipped, 30000 deselected, 1 xfailed in 2.56s\n\nression.py:17: AssertionError\n_________ test_no_args_is_prefix_line_without_trailing_space[8-Run: ] __________\n\nprefix = 'Run: ', indent = 8\n\n    @pytest.mark.parametrize(\"prefix\", [None, \"Run: \"])\n    @pytest.mark.parametrize(\"indent\", [0, 2, 8])\n    def test_no_args_is_prefix_line_without_trailing_space(prefix, indent):\n        with_args = usage(\"[OPTIONS]\", prefix, indent)\n        assert with_args.endswith(\" [OPTIONS]\\n\")\n>       assert usage(\"\", prefix, indent) == with_args.removesuffix(\" [OPTIONS]\\n\") + \"\\n\"\nE       AssertionError: assert '        Run: demo\\n' == '   Run: demo\\n'\nE         \nE         -    Run: demo\nE         +         Run: demo\nE         ? +++++\n\ntests/test_regression.py:17: AssertionError\n=========================== short test summary info ============================\nFAILED tests/test_regression.py::test_no_args_is_prefix_line_without_trailing_space[2-None]\nFAILED tests/test_regression.py::test_no_args_is_prefix_line_without_trailing_space[2-Run: ]\nFAILED tests/test_regression.py::test_no_args_is_prefix_line_without_trailing_space[8-None]\nFAILED tests/test_regression.py::test_no_args_is_prefix_line_without_trailing_space[8-Run: ]\n4 failed, 3 passed in 0.02s\n",
+ "pass": false
+}

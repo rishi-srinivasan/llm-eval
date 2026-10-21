@@ -1,0 +1,54 @@
+diff --git a/src/click/types.py b/src/click/types.py
+index 556f20f..6e2bfe8 100644
+--- a/src/click/types.py
++++ b/src/click/types.py
+@@ -408,15 +408,45 @@ class Choice(ParamType[ParamTypeValue], t.Generic[ParamTypeValue]):
+         """
+         from click.shell_completion import CompletionItem
+ 
+-        str_choices = map(str, self.choices)
++        normalized_mapping = self._normalized_mapping(ctx=ctx)
++        valid_normalized_values = frozenset(normalized_mapping.values())
++        # A subclass can choose a non-idempotent normalization. In that case
++        # only the original spelling is known to be accepted on the command
++        # line, so complete it and use the normalized value just for matching.
++        subclassed_normalization = (
++            type(self).normalize_choice is not Choice.normalize_choice
++        )
++
++        def completion_value(choice: ParamTypeValue, normalized: str) -> str:
++            if subclassed_normalization and (
++                self.normalize_choice(normalized, ctx) in valid_normalized_values
++            ):
++                return normalized
++
++            if isinstance(choice, enum.Enum):
++                return choice.name  # type: ignore[union-attr]
++            return str(choice)
++
++        normalized_choices = [
++            (completion_value(choice, normalized), normalized)
++            for choice, normalized in normalized_mapping.items()
++        ]
+ 
+         if self.case_sensitive:
+-            matched = (c for c in str_choices if c.startswith(incomplete))
++            matched = (
++                value
++                for value, normalized in normalized_choices
++                if normalized.startswith(incomplete)
++            )
+         else:
+             incomplete = incomplete.lower()
+-            matched = (c for c in str_choices if c.lower().startswith(incomplete))
++            matched = (
++                value
++                for value, normalized in normalized_choices
++                if normalized.lower().startswith(incomplete)
++            )
+ 
+-        return [CompletionItem(c) for c in matched]
++        return [CompletionItem(value) for value in matched]
+ 
+ 
+ class DateTimeInfoDict(ParamTypeInfoDict):
